@@ -6,7 +6,7 @@
  * @Author: Arunkumar Sadasivan
  * @Date: 10/24/2017
  * @Description: It uses the testssl.sh utility to test SSL/TLS
- * @Usage: python audit.py -p testssl.sh/testssl.sh -t ok -o testssloutput -u 10.200.33.10         
+ * @Usage: python audit.py -p testssl.sh/testssl.sh -t ok -o testssloutput -u uri         
  */
  
 '''
@@ -61,7 +61,7 @@ def createCSVfindings(testSSLoutputFile, sev_threshold):
     vul_count = 0
     result = "Fail"
     guidelines = readGuidelines() # read the guidelines testssl mapping file.
-    csvheader = "Severity" + csvdelimiter + "Issue" + csvdelimiter + "CVE" + csvdelimiter + "Violation Status" + csvdelimiter + "PSO Guidelines" + eoldelimiter
+    csvheader = "Severity" + csvdelimiter + "Issue" + csvdelimiter + "CVE" + csvdelimiter + "Violation Status" + csvdelimiter + "Guidelines" + eoldelimiter
     print("[Info] Creating CSV file....")
     with open(testSSLoutputFile) as json_file:
         json_data = json.load(json_file) # Load the testssl output file
@@ -120,7 +120,7 @@ def checkSevThreshold(severity, sev_threshold):
         return False
     
 
-# check if the PSO guidelines is violated
+# check if the Guidelines is violated
 def getViolationStatus(severity):  
     if severity.lower() == "ok":
         return "pass"
@@ -143,10 +143,10 @@ def getGuidelinesData(guidelines,testSSLID):
     complianceData = "Not defined"
     if guideline:
         for guideline in guideline:
-            print (guideline["PSO Guideline"])
-            name = guideline["PSO Guideline"]
+            print (guideline["Guideline"])
+            name = guideline["Guideline"]
             compliance = guideline["Compliance"]
-            complianceData = "PSO Guideline Name:" + name + "\n" + "Requirements:" + "\n" + '\n'.join(compliance) + "\n\n"
+            complianceData = "Guideline Name:" + name + "\n" + "Requirements:" + "\n" + '\n'.join(compliance) + "\n\n"
     return complianceData
     
 
