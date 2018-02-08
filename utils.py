@@ -89,9 +89,11 @@ def getIgnoreTestCaseList(configObj):
 ########################## Excel Parser #################################################################################
 '''
 
-def getGuidelinesArry(guidelineFileName, sheetName, guideLineName):
-    wb = openpyxl.load_workbook(guidelineFileName)
-    sheet = wb.get_sheet_by_name(sheetName) 
+# read the sheet and convert it into CSV
+def getGuidelinesArry(guidelineFileName, guideLineName):
+    workbook = openpyxl.load_workbook(guidelineFileName)
+    sheetName = getSheetName(workbook)
+    sheet = workbook[sheetName]
 #   rows = sheet.rows 
 #   rows = sheet.max_row
 #   column = sheet.max_column
@@ -109,6 +111,16 @@ def getGuidelinesArry(guidelineFileName, sheetName, guideLineName):
             automationKey = row[4].value
             guidelineCSV.append([sectionName, section, guideLine, automationKey, guideLineName])
     return guidelineCSV
+
+# get sheetname
+def getSheetName(workbook):
+    # get sheet names array
+    sheetnames = workbook.sheetnames
+    for sheetname in sheetnames:
+        if sheetname == "revision": #skip 
+            continue
+        else:
+            return sheetname
 
 
 '''
