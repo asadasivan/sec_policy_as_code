@@ -15,8 +15,11 @@ import sys
 import datetime
 import configparser
 import json
+import re
 import importlib
-import openpyxl
+from collections import OrderedDict
+# python3 -m pip install openpyxl
+import openpyxl 
 
 # Defaults
 csvdelimiter = "@@" # data might contain commas, semicolon etc. So, it is safe to use a delimiter that doesn't exists in the string.
@@ -88,7 +91,6 @@ def getIgnoreTestCaseList(configObj):
 '''
 ########################## Excel Parser #################################################################################
 '''
-
 # read the sheet and convert it into CSV
 def getGuidelinesArry(guidelineFileName, guideLineName):
     workbook = openpyxl.load_workbook(guidelineFileName)
@@ -121,7 +123,6 @@ def getSheetName(workbook):
             continue
         else:
             return sheetname
-
 
 '''
 ########################## File Parser #################################################################################
@@ -180,11 +181,11 @@ def getDateTime(fileName,fileExt):
 '''
 
 # Convert a CSV data into html report. 
-def createHTMLReport(csvdata, htmlReportName, reportTitle, details):
+def createHTMLReport(csvdata, reportFile, reportTitle, detailsArry):
     csvArry = csvdata.split(eoldelimiter) # convert the CSV string into list)
     csvArry = filter(None, csvArry) # remove empty values
     print("[Info] Creating HTML report...")
-    with open(htmlReportName, 'w') as fileHandle: #enter the output filename
+    with open(reportFile, 'w') as fileHandle: #enter the output filename
         fileHandle.write("<head>" + "\n")
         fileHandle.write("<!-- The line below is to make sure it uses the right encoding format  -->" + "\n")
         fileHandle.write("<meta http-equiv='Content-Type' content='application/xhtml+xml; charset=UTF-8' />" + "\n")
@@ -197,8 +198,8 @@ def createHTMLReport(csvdata, htmlReportName, reportTitle, details):
        
         fileHandle.write("<table data-toggle = 'table' data-pagination = 'true'>" + "\n")
         fileHandle.write("<h3 align='center'> <font color='blue'> " + reportTitle +  " </font> </h3>" + "\n")
-        if details:
-            for detail in details:
+        if detailsArry:
+            for detail in detailsArry:
                 fileHandle.write("<h4 align='left'> <font color='black'> " + detail +  " </font> </h4>" + "\n")
         fileHandle.write("<style type='text/css'>" + "\n")
         fileHandle.write("table { color: #333; /* Lighten up font color */ font-family: Helvetica, Arial, sans-serif; /* Nicer font */  width: 100%; border-collapse:collapse; border-spacing: 2; }"+ "\n")
@@ -232,5 +233,63 @@ def createHTMLReport(csvdata, htmlReportName, reportTitle, details):
         fileHandle.write("<script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js'></script>" + "\n")
         fileHandle.write("<!-- Latest compiled and minified JavaScript -->" + "\n")
         fileHandle.write("<script src='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.8.1/bootstrap-table.min.js'></script>" + "\n")
-    print("[Done] Custom HTML report successfully created: " + htmlReportName)
+    print("[Done] Custom HTML report successfully created: " + reportFile)
     
+
+'''
+########################## CSV Report #################################################################################
+'''    
+# Convert a CSV data into html report. 
+def createCSVReport(csvdata, reportFile, detailsArry):
+#     csvArry = csvdata.split(eoldelimiter) # convert the CSV string into list)
+#     csvArry = filter(None, csvArry) # remove empty values
+    print("[Info] Creating CSV report...")
+    
+    jsonArry = []
+    outputData = {}
+    detailsDict = convertDetailstoDict(detailsArry)
+    violationsArry = convertCSVDataintoDict(csvdata)
+    outputData["violations"] = violationsArry
+    outputData["details"] = detailsDict
+    jsonArry.append(outputData)
+    with open(reportFile, 'w', encoding = "utf-8") as fileHandle: #enter the output filename
+        json.dump(jsonArry, fileHandle, indent = 4, sort_keys=True)       
+                    
+    print("[Done] Custom CSV report successfully created: " + reportFile)   
+     
+    
+# convert details Array to dictionary
+def convertDetailstoDict(detailsArry):
+    detailsDict = {}
+    regexPattern = "(.*?):(.*?)$"
+    for detail in detailsArry:
+        matchObj = re.match(regexPattern, detail)
+        if matchObj:
+            detailKey = matchObj.group(1)
+            detailValue = matchObj.group(2)
+            detailsDict[detailKey] = detailValue.strip()
+    return detailsDict   
+
+# convert csv data into dictionary
+def convertCSVDataintoDict(csvdata):
+    csvArry = csvdata.split(eoldelimiter) # convert the CSV string into list)
+    csvArry = filter(None, csvArry) # remove empty values
+    firstrow = True 
+    violationsArry = []
+    headerKey = None
+    for row in csvArry:
+        rows = row.split(csvdelimiter)  
+        rowSize = len(rows)
+        incrementer = 0
+        if firstrow: # header
+            firstrow = False
+            headerKey = rows
+            continue
+        else:
+            violationsDict = {}
+            for col in rows:
+                violationsDict[headerKey[incrementer]] = col
+                incrementer = incrementer + 1
+            violationsArry.append(violationsDict)       
+    return  violationsArry
+       
