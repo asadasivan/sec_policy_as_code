@@ -17,7 +17,6 @@ import configparser
 import json
 import re
 import importlib
-from collections import OrderedDict
 # python3 -m pip install openpyxl
 import openpyxl 
 
@@ -66,27 +65,7 @@ def writeJSONFile(file, json_data):
 # This method is used to print the JSON data in a much more human readable format    
 def prettyPrintJSON(json_data):
     print(json.dumps(json_data, sort_keys=True, indent=4))
-    
-    
-# get guideline value associated with the key
-def guidelinesValue(guidelineKeyMap, testSSLID, guidelineKey):
-    if testSSLID in guidelineKeyMap:
-        guidelineKeyValue = guidelineKeyMap.get(testSSLID)[0]
-        if guidelineKeyValue:
-            return guidelineKeyValue.get(guidelineKey, None) # default value is None 
-        else:
-            return "Not defined"    
-    
-# read the ignore test case file into a list
-# The file contains the list of test cases to be filtered in the final report
-def getIgnoreTestCaseList(configObj):
-    ignoretestFile = getConfigValue(configObj, 'results', 'ignoreTestFile')
-    with open(ignoretestFile,'r') as textFile:
-        testcases = []
-        for line in textFile:
-            # string contain trailing newlines. To remove extra newline, use str.rstrip to remove "\n"
-            testcases.append(line.rstrip('\n'))
-    return testcases
+
 
 '''
 ########################## Excel Parser #################################################################################
@@ -244,7 +223,6 @@ def createCSVReport(csvdata, reportFile, detailsArry):
 #     csvArry = csvdata.split(eoldelimiter) # convert the CSV string into list)
 #     csvArry = filter(None, csvArry) # remove empty values
     print("[Info] Creating CSV report...")
-    
     jsonArry = []
     outputData = {}
     detailsDict = convertDetailstoDict(detailsArry)
@@ -279,7 +257,7 @@ def convertCSVDataintoDict(csvdata):
     headerKey = None
     for row in csvArry:
         rows = row.split(csvdelimiter)  
-        rowSize = len(rows)
+        #rowSize = len(rows)
         incrementer = 0
         if firstrow: # header
             firstrow = False
@@ -292,4 +270,3 @@ def convertCSVDataintoDict(csvdata):
                 incrementer = incrementer + 1
             violationsArry.append(violationsDict)       
     return  violationsArry
-       
