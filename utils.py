@@ -212,6 +212,10 @@ def createHTMLReport(csvdata, reportFile, reportTitle, detailsArry):
         fileHandle.write("<script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js'></script>" + "\n")
         fileHandle.write("<!-- Latest compiled and minified JavaScript -->" + "\n")
         fileHandle.write("<script src='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.8.1/bootstrap-table.min.js'></script>" + "\n")
+    
+    # Docker adds a "/" character when bind mount is performed. Removing the char "/" if exists
+    if reportFile[0] == "/":
+        reportFile = reportFile[1:] # remove first character alone
     print("[Done] Custom HTML report successfully created: " + reportFile)
     
 
@@ -232,7 +236,9 @@ def createCSVReport(csvdata, reportFile, detailsArry):
     jsonArry.append(outputData)
     with open(reportFile, 'w', encoding = "utf-8") as fileHandle: #enter the output filename
         json.dump(jsonArry, fileHandle, indent = 4, sort_keys=True)       
-                    
+     # Docker adds a "/" character when bind mount is performed. Removing the char "/" if exists
+    if reportFile[0] == "/":
+        reportFile = reportFile[1:] # remove first character alone                
     print("[Done] Custom CSV report successfully created: " + reportFile)   
      
     
